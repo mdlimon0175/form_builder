@@ -8,7 +8,7 @@ const Options = Object.freeze({
     Delete: "Delete",
 });
 
-export default function FieldOption({ disable, field_id, handleFieldSetting, handleFieldDuplicate, handleFieldDelete }) {
+export default function FieldOption({ field_id, handleFieldSetting, handleFieldDuplicate, handleFieldDelete }) {
     const ulRef = useRef(null);
     const [showOption, setShowOption] = useState(false);
 

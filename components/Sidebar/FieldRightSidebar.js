@@ -27,7 +27,7 @@ export default function FieldRightSidebar({ data, handleFieldUpdateSubmit, handl
         return () => {
             document.removeEventListener("mousedown", handleClickOutside);
         };
-    }, []);
+    }, [data.id, handleClose]);
 
     const onChangeHandler = (e) => {
         const { value, name } = e.target;

@@ -6,6 +6,7 @@
 // Date: 17/09/2025
 */
 
+import { Suspense } from "react";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 
 import { getQueryClient } from "./getReactquery";
@@ -22,7 +23,9 @@ export default async function Home() {
     return (
         <HydrationBoundary state={dehydrate(queryClient)}>
             <section className="max-w-7xl mx-auto px-6">
-                <FormBuilder />
+                <Suspense>
+                    <FormBuilder />
+                </Suspense>
             </section>
         </HydrationBoundary>
     );
