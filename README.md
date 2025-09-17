@@ -1,36 +1,75 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Form Builder
 
-## Getting Started
+Form Builder is a dynamic form creation tool built with Next.js, React DnD, React Hook Form, and React Query. It allows users to build and customize forms with drag-and-drop capabilities, reorder form fields, and manage form data efficiently.
 
-First, run the development server:
+## Installation
 
+### Prerequisites
+
+Make sure you have [Node.js](https://nodejs.org/en/download/) and [npm](https://www.npmjs.com/) or [yarn](https://yarnpkg.com/) installed.
+
+### Steps to install
+
+1. Clone the repository:
+
+   ```bash
+   git clone https://github.com/your-username/form-builder.git
+   cd form-builder
+2. Install the dependencies:
+
+If you're using npm:
+```bash
+npm install
+```
+Or if you're using yarn:
+```bash
+yarn install
+```
+3. Start the development server:
 ```bash
 npm run dev
-# or
+```
+Or if you're using yarn:
+```bash
 yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Usage
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+Once the app is running at `http://localhost:3000`:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- The app will fetch the form data from `/api/data.json`, which contains the form structure in JSON format. The form will be dynamically rendered based on this data in the main area.
+  
+- On the left side, you'll see a list of **default form fields** (e.g., text input, checkbox, etc.) that you can **drag and drop** into the main form area to build your form.
 
-## Learn More
+You can toggle between **Preview Mode** and **Builder Mode** using a button at the top-left corner of the main form area:
+  - **Preview Mode**: Displays a fully rendered, interactive preview of the form, as it will appear to end-users.
+  - **Builder Mode**: Allows you to edit and arrange the form by dragging and dropping fields, re-ordering them, or configuring field options.
 
-To learn more about Next.js, take a look at the following resources:
+- On **builder mode** you'll see a clickable **options menu** for each field on hover. This menu allows you to:
+  - **Settings**: Customize the field (e.g., change label, name, etc.).
+  - **Duplicate**: Create a copy of the field.
+  - **Delete**: Remove the field from the form.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- On **builder mode** Fields can also be **re-ordered** by dragging them into the desired position within the main area.
+  
+- Form data is managed with **react-hook-form**, which simplifies form state management.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Libraries Used
 
-## Deploy on Vercel
+- [Next.js](https://nextjs.org/)  
+  The React framework for production.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- [react-dnd](https://react-dnd.github.io/react-dnd)  
+  Drag and drop abstraction for building dynamic forms.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- [react-hook-form](https://react-hook-form.com/)  
+  Efficient form handling with minimal re-renders.
+
+- [react-query](https://tanstack.com/query)  
+  Data-fetching and state management.
+
+## Contact Information
+- **Email**: [mdlimon0175@gmail.com](mailto:mdlimon0175@gmail.com)
+- **WhatsApp**: [+8801568113207](https://wa.me/8801568113207)
+- **Facebook**: [fb.com/limon.btcz](https://fb.com/limon.btcz)
