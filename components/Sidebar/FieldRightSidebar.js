@@ -55,7 +55,7 @@ export default function FieldRightSidebar({ data, handleFieldUpdateSubmit, handl
                         type="number"
                         label={"Column Width (%)"}
                         name={field_name}
-                        value={parseFloat(formValues[field_name].replace('%', ''))}
+                        value={parseFloat(formValues[field_name].replace('%', '')) || ""}
                         onChange={onChangeHandler}
                     />
                 );

@@ -48,15 +48,7 @@
                 "Option 1=option1",
                 "Option 2=option2",
                 "Option 3=option3",
-                "Option 4=option4",
-                "Option 5=option5",
-                "Option 6=option6",
-                "Option 7=option7",
-                "Option 8=option8",
-                "Option 9=option9",
-                "Option 10=option10",
-                "Option 11=option11",
-                "Option 12=option12"
+                "Option 4=option4"
             ],
             "columnWidth": "50%",
             "name": "Radio Input",

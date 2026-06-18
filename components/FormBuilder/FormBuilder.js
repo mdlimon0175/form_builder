@@ -1,9 +1,6 @@
 "use client"
-import { useState } from "react"
-import dynamic from "next/dynamic";
-import parse from 'html-react-parser';
+import { useRef, useState } from "react"
 import { DndProvider } from 'react-dnd'
-import DatePicker from "react-datepicker";
 import { useForm } from "react-hook-form";
 import { useDrag, useDrop } from 'react-dnd';
 import { useQuery } from "@tanstack/react-query";
@@ -29,20 +26,38 @@ function queryParamBool(query_param) {
 }
 
 export default function FormBuilder() {
+    const previewMode = queryParamBool(
+        useSearchParams()
+        .get('preview_mode')
+    );
+
+    return (
+        <DndProvider backend={HTML5Backend}>
+            <div className="grid grid-cols-12 gap-6">
+                {!previewMode && <LeftSidebar className={"col-span-3"} />}
+                <div className={`${previewMode ? "col-span-12" : "col-span-9"}`}>
+                    <FormContainer />
+                </div>
+            </div>
+        </DndProvider>
+    )
+}
+
+function FormContainer() {
+    const previewMode = queryParamBool(
+        useSearchParams()
+        .get('preview_mode')
+    );
     const { push } = useRouter();
     const pathname = usePathname();
     const { data } = useQuery({
         queryKey: ['data'],
         queryFn: fetchFormBuilderData
     });
-    const previewMode = queryParamBool(
-        useSearchParams()
-        .get('preview_mode')
-    );
     const {register, setValue, handleSubmit, getValues, unregister} = useForm();
     const [selectedField, setSelectedField] = useState(null);
     const [fieldsData, setFieldsData] = useState(data?.data?.fields ?? []);
-
+    const [swapIndex, setSwapIndex] = useState(-1);
     const generateId = () => {
         const existingIdSet = new Set(fieldsData.map(obj => obj.id));
         let newId;
@@ -222,93 +237,77 @@ export default function FormBuilder() {
     }
 
     return (
-        <DndProvider backend={HTML5Backend}>
-            <div className="grid grid-cols-12 gap-6">
-                {!previewMode && <LeftSidebar className={"col-span-3"} />}
-                <div className={`${previewMode ? "col-span-12" : "col-span-9"}`}>
-                    <form onSubmit={handleSubmit(onSubmitHandler)} className="py-6 relative">
-                        <h1 className="text-2xl text-center mb-10">{data?.data?.name ?? "Custom Form"}</h1>
-                        <div className="absolute top-6 left-0 z-50">
-                            <button
-                                type="button"
-                                onClick={() => push(`${pathname}?preview_mode=${!previewMode}`)}
-                                className="text-gray-700 focus:outline-none focus:border-none font-semibold text-sm cursor-pointer"
-                            >
-                                Go {previewMode ? "Builder Mode" : "Preview Mode"}
-                            </button>
-                        </div>
-                        <div className="space-y-4">
-                            {data.status ? (
-                                <>
-                                    <div className={`space-y-4 ${previewMode ? "flex flex-wrap" : "preview_mode_wrapper"}`}>
-                                        {fieldsData.map((field, i) => {
-                                            const { columnWidth } = field;
-                                            const propertyName = previewMode ? "flexBasis" : "width";
-                                            const propertyValue = previewMode ? columnWidth : "50%";
-                                            const style = {[propertyName]: propertyValue};
-                                            return (
-                                                <DragableField 
-                                                    key={field.id}
-                                                    style={style}
-                                                    index={i}
-                                                    handleMove={handleReorderingField}
-                                                    handleAddField={handleAddField}
-                                                >
-                                                    {renderField(field)}
-                                                    {!previewMode ? (
-                                                        <>
-                                                            <FieldOption
-                                                                field_id={field.id}
-                                                                handleFieldDelete={handleFieldDelete}
-                                                                handleFieldSetting={handleFieldSetting}
-                                                                handleFieldDuplicate={handleFieldDuplicate}
-                                                            />
-                                                            {
-                                                                selectedField && 
-                                                                selectedField.id === field.id && 
-                                                                <FieldRightSidebar 
-                                                                    data={field}
-                                                                    handleFieldUpdateSubmit={handleFieldUpdate}
-                                                                    handleClose={handleCloseRightSidebar}
-                                                                />
-                                                            }
-                                                        </>
-                                                    ): null}
-                                                </DragableField>
-                                            )
-                                        })}
-                                    </div>
-                                    <button type="submit" className="form_btn">Submit</button>
-                                </>
-                            ) : (
-                                <p className="font-bold text-red-400">{data.message}</p>
-                            )}
-                        </div>
-                    </form>
-                </div>
+        <form onSubmit={handleSubmit(onSubmitHandler)} className="py-6 relative">
+            <h1 className="text-2xl text-center mb-10">{data?.data?.name ?? "Custom Form"}</h1>
+            <div className="absolute top-6 left-0 z-50">
+                <button
+                    type="button"
+                    onClick={() => push(`${pathname}?preview_mode=${!previewMode}`)}
+                    className="text-gray-700 focus:outline-none focus:border-none font-semibold text-sm cursor-pointer"
+                >
+                    Go {previewMode ? "Builder Mode" : "Preview Mode"}
+                </button>
             </div>
-        </DndProvider>
+            <div className="space-y-4">
+                {data.status ? (
+                    <>
+                        <div className={`${previewMode ? "flex flex-wrap" : "preview_mode_wrapper"}`}>
+                            {fieldsData.map((field, i) => {
+                                const { columnWidth } = field;
+                                const propertyName = previewMode ? "flexBasis" : "width";
+                                const propertyValue = previewMode ? columnWidth : "50%";
+                                const style = {[propertyName]: propertyValue};
+                                return (
+                                    <DragableField 
+                                        key={field.id}
+                                        style={style}
+                                        index={i}
+                                        swapIndex={swapIndex}
+                                        setSwapIndex={setSwapIndex}
+                                        handleMove={handleReorderingField}
+                                        handleAddField={handleAddField}
+                                    >
+                                        {renderField(field)}
+                                        {!previewMode ? (
+                                            <>
+                                                <FieldOption
+                                                    field_id={field.id}
+                                                    handleFieldDelete={handleFieldDelete}
+                                                    handleFieldSetting={handleFieldSetting}
+                                                    handleFieldDuplicate={handleFieldDuplicate}
+                                                />
+                                                {
+                                                    selectedField && 
+                                                    selectedField.id === field.id && 
+                                                    <FieldRightSidebar 
+                                                        data={field}
+                                                        handleFieldUpdateSubmit={handleFieldUpdate}
+                                                        handleClose={handleCloseRightSidebar}
+                                                    />
+                                                }
+                                            </>
+                                        ): null}
+                                    </DragableField>
+                                )
+                            })}
+                        </div>
+                        <button type="submit" className="form_btn">Submit</button>
+                    </>
+                ) : (
+                    <p className="font-bold text-red-400">{data.message}</p>
+                )}
+            </div>
+        </form>
     )
 }
 
-function DragableField({ children, style, index, handleMove, handleAddField }) {
+function DragableField({ children, style, index, swapIndex, setSwapIndex, handleMove, handleAddField }) {
+    const [swapPosition, setSwapPosition] = useState(undefined);
     const previewMode = queryParamBool(
         useSearchParams()
         .get('preview_mode')
     );
-    const [, drag] = useDrag({
-        type: 'FIELD',
-        item: { index, canDrag: !previewMode },
-        canDrag: (item) => {
-            return item.canDrag
-        }
-    });
-
-    /**
-     * @note we can use a dropZone component to make it more effective
-     * for short time we complete task like this.
-     */
-    const [, drop] = useDrop({
+    const [{ isOver }, drop] = useDrop({
         accept: 'FIELD',
         canDrop: () => {
             return !previewMode
@@ -324,11 +323,44 @@ function DragableField({ children, style, index, handleMove, handleAddField }) {
                 // add new one
                 handleAddField(item, index);
             }
-        }
+            setSwapIndex(-1);
+            setSwapPosition(undefined);
+        },
+        hover: (item) => {
+            if(swapIndex !== index) setSwapIndex(index);
+            if(typeof item.index === "number" && item.index !== index) {
+                if(item.index > index) {
+                    setSwapPosition("top");
+                } else {
+                    setSwapPosition("bottom");
+                }
+            } else if(item.index === index) {
+                setSwapPosition("bottom");
+            } else {
+                setSwapPosition("top");
+            }
+        },
+        collect: (monitor) => ({
+            isOver: monitor.isOver()
+        })
+    });
+    const [{ isDragging }, drag] = useDrag({
+        type: 'FIELD',
+        item: { index, canDrag: !previewMode },
+        canDrag: (item) => {
+            return item.canDrag
+        },
+        collect: (monitor) => ({
+            isDragging: monitor.isDragging()
+        })
     });
 
     return (
-        <div ref={node => drag(drop(node))} style={style} className="group form_input_cont">
+        <div 
+            style={style}
+            ref={node => drag(drop(node))}
+            className={`group form_input_cont pb-4 last:pb-0 ${isDragging ? "opacity-50" : "opacity-100"} ${swapIndex === index && isOver ? swapPosition === "top" ? "border-t" : "border-b" : "border-none"}`}
+        >
             {children}
         </div>
     )

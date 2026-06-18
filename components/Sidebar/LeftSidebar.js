@@ -1,5 +1,5 @@
 "use client"
-import { useDrag, useDrop } from 'react-dnd';
+import { useDrag } from 'react-dnd';
 
 import defaultFieldsListData from "@/lib/defaultFieldsListData"
 
@@ -19,13 +19,16 @@ export default function LeftSidebar({ className, handleAddField }) {
 }
 
 function DefaultFieldItem({ field }) {
-    const [, drag] = useDrag({
+    const [{ isDragging }, drag] = useDrag({
         type: 'FIELD',
-        item: field
+        item: field,
+        collect: (monitor) => ({
+            isDragging: monitor.isDragging()
+        })
     });
 
     return (
-        <div ref={drag} className="py-2 px-4 bg-white rounded-xl text-gray-600">
+        <div ref={drag} className={`${isDragging ? "opacity-50" : "opacity-100"} py-2 px-4 bg-white rounded-xl text-gray-600`}>
             <span>{`Add ${field.type} field`}</span>
         </div>
     )
