@@ -1,5 +1,15 @@
 @import "tailwindcss";
 
+.form_show_animation {
+    animation: fadeIn 0.2s linear forwards;
+    -webkit-animation: fadeIn 0.2s linear forwards;
+}
+
+.form_hide_animation {
+    animation: fadeOut 0.2s linear forwards;
+    -webkit-animation: fadeOut 0.2s linear forwards;
+}
+
 @layer components {
     .form_label {
         @apply block mb-2 text-sm font-medium text-gray-700
@@ -19,5 +29,33 @@
 
     .field_option_btn {
         @apply inline-block w-full cursor-pointer px-3 py-2 bg-gray-200 text-gray-700 hover:bg-blue-400 hover:text-white transition-all duration-300 focus:outline-none focus:border-none
+    }
+}
+
+@media (max-width: 640px) {
+    .form_input_cont_c {
+        width: 100% !important;
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        visibility: hidden;
+    }
+    to {
+        opacity: 1;
+        visibility: visible;
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+        visibility: visible;
+    }
+    to {
+        opacity: 0;
+        visibility: hidden;
     }
 }

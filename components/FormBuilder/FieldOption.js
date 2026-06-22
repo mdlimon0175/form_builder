@@ -44,17 +44,17 @@ export default function FieldOption({ field_id, handleFieldSetting, handleFieldD
     }
 
     return (
-        <div className={`absolute top-0 right-0 transition-all duration-300 ${showOption ? "opacity-100 visible" : "opacity-0 invisible group-hover:opacity-100 group-hover:visible"}`}>
+        <div className={`absolute top-0 right-2 lg:right-0 transition-all duration-300 opacity-100 visible ${showOption ? "lg:opacity-100 lg:visible" : "lg:opacity-0 lg:invisible lg:group-hover:opacity-100 lg:group-hover:visible"}`}>
             <button
                 type="button"
                 className="cursor-pointer focus:outline-none focus:border-none"
                 onClick={() => setShowOption(!showOption)}
             >
-                <EllipsisVerticle strokeWidth={2} />
+                <EllipsisVerticle className={"rotate-90 lg:rotate-0 size-5 text-gray-700"} strokeWidth={2} />
             </button>
             <ul 
                 ref={ulRef}
-                className={`flex absolute top-5 left-1/2 ml-1 border border-gray-700/50 ${showOption ? "opacity-100 visible" : "opacity-0 invisible"}`}
+                className={`absolute flex-col z-[999999] lg:flex-row top-5 right-1/2 sm:right-2 sm:translate-x-full ml-1 border border-gray-700/50 ${showOption ? "flex" : "hidden"}`}
             >
                 {Object.keys(Options).map(name => {
                     return (
@@ -71,7 +71,7 @@ function ListItem({ name, handleClick }) {
         <li>
             <button
                 type="button"
-                className={`field_option_btn ${Options[name] === Options.Delete && "hover:bg-red-400"}`}
+                className={`${Options[name] === Options.Delete ? "bg-red-400 hover:bg-red-500/90 text-white" : ""} field_option_btn`}
                 onClick={() => handleClick(name)}
             >{Options[name]}</button>
         </li>

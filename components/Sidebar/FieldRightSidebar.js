@@ -1,7 +1,8 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 
-export default function FieldRightSidebar({ data, handleFieldUpdateSubmit, handleClose }) {
+export default function FieldRightSidebar({ data, onSubmitFieldUpdate, onClose }) {
+    const backdropRef = useRef(null);
     const containerRef = useRef(null);
     const [formValues, setFormValues] = useState({
         label: data?.label ?? "",
@@ -9,32 +10,52 @@ export default function FieldRightSidebar({ data, handleFieldUpdateSubmit, handl
         placeholder: data?.placeholder ?? "",
         required: data?.required ?? false,
         options: data?.options?.join("\n") ?? "",
-        columnWidth: data?.columnWidth ?? "50",
-        content: data?.content ?? ""
+        columnWidth: data?.columnWidth ?? "50%",
+        content: data?.content ?? "",
     });
 
     useEffect(() => {
-        const handleClickOutside = (e) => {
-            if (
-                containerRef.current &&
-                !containerRef.current.contains(e.target)
-            ) {
-                handleClose(data.id);
-            }
-        };
-        document.addEventListener("mousedown", handleClickOutside);
+        blockUiFocus();
+        containerRef.current.querySelector("input").focus();
+        document.addEventListener("keyup", handleEscapeUp);
 
         return () => {
-            document.removeEventListener("mousedown", handleClickOutside);
-        };
-    }, [data.id, handleClose]);
+            unblockUiFocus();
+            document.removeEventListener("keyup", handleEscapeUp);
+        }
+    }, []);
 
-    const onChangeHandler = (e) => {
-        const { value, name } = e.target;
-        setFormValues({...formValues, [name]: value});
+    function blockUiFocus() {
+        Array.from(document.body.children).forEach(el => {
+            if(!el.getAttribute("data-dialog") && el.tagName !== "SCRIPT") {
+                el.setAttribute("inert", true);
+            }
+        })
     }
 
-    const renderField = (field_name) => {
+    function unblockUiFocus() {
+        Array.from(document.body.children).forEach(el => {
+            if(!el.getAttribute("data-dialog")) {
+                el.removeAttribute("inert");
+            }
+        })
+    }
+
+    function handleEscapeUp(e) {
+        if (e.key === "Escape") {
+            handleClose();
+        }
+    }
+
+    function onChangeHandler(e) {
+        const { value, name } = e.target;
+        setFormValues({
+            ...formValues,
+            [name]: name === "columnWidth" ? `${value}%` : value,
+        });
+    }
+
+    function renderField(field_name) {
         switch (field_name) {
             case "label":
             case "name":
@@ -42,7 +63,10 @@ export default function FieldRightSidebar({ data, handleFieldUpdateSubmit, handl
                 return (
                     <InputField
                         key={field_name}
-                        label={field_name.charAt(0).toUpperCase() + field_name.slice(1)}
+                        label={
+                            field_name.charAt(0).toUpperCase() +
+                            field_name.slice(1)
+                        }
                         name={field_name}
                         value={formValues[field_name]}
                         onChange={onChangeHandler}
@@ -55,7 +79,11 @@ export default function FieldRightSidebar({ data, handleFieldUpdateSubmit, handl
                         type="number"
                         label={"Column Width (%)"}
                         name={field_name}
-                        value={parseFloat(formValues[field_name].replace('%', '')) || ""}
+                        value={
+                            parseFloat(
+                                formValues[field_name].replace("%", "")
+                            ) || ""
+                        }
                         onChange={onChangeHandler}
                     />
                 );
@@ -63,7 +91,10 @@ export default function FieldRightSidebar({ data, handleFieldUpdateSubmit, handl
                 return (
                     <ToggleButton
                         key={field_name}
-                        label={field_name.charAt(0).toUpperCase() + field_name.slice(1)}
+                        label={
+                            field_name.charAt(0).toUpperCase() +
+                            field_name.slice(1)
+                        }
                         name={field_name}
                         value={formValues[field_name]}
                         onChange={onChangeHandler}
@@ -74,54 +105,91 @@ export default function FieldRightSidebar({ data, handleFieldUpdateSubmit, handl
         }
     }
 
+    function handleSubmit(e) {
+        e.preventDefault();
+        backdropRef.current.classList.add("form_hide_animation");
+        containerRef.current.classList.add("form_hide_animation");
+        containerRef.current.addEventListener("animationend", handleAnimationEndOnSubmit, {once: true});
+    }
+
+    function handleClose() {
+        backdropRef.current.classList.add("form_hide_animation");
+        containerRef.current.classList.add("form_hide_animation");
+        containerRef.current.addEventListener("animationend", handleAnimationEnd, {once: true});
+    }
+
+    function handleAnimationEnd() {
+        onClose(data.id);
+    }
+
+    function handleAnimationEndOnSubmit() {
+        onSubmitFieldUpdate(data.id, formValues);
+    }
+
     return (
         <div
-            ref={containerRef}
-            className="absolute w-md top-0 right-0 translate-x-full z-50"
+            aria-modal="true"
+            data-dialog="true"
+            onClick={handleClose}
+            className="fixed inset-0 z-50 flex items-center justify-center"
         >
-            <div className="absolute bg-white p-8 rounded-lg shadow-lg max-w-lg w-full">
-                <h2 className="text-2xl font-semibold mb-4">Setting</h2>
+            <div ref={backdropRef} className="absolute inset-0 -z-[1] bg-black/50 form_show_animation" />
+            <form
+                ref={containerRef}
+                onSubmit={handleSubmit}
+                onClick={(e) => e.stopPropagation()}
+                className="relative form_show_animation m-4 bg-white rounded-lg shadow-lg w-full max-w-lg p-4 sm:p-6 md:p-8 max-h-[90vh] overflow-y-auto"
+            >
+                <h2 className="text-xl sm:text-2xl font-semibold mb-4">
+                    Setting
+                </h2>
+
                 <div className="space-y-4">
-                    {data.type !== "acceptance" && Object.keys(formValues).map(renderField)}
-                    {["select", "radio", "checkbox"].includes(data.type) && <InputField
-                        key={data.type}
-                        type="textarea"
-                        label={"Options (key=value as per new line)"}
-                        name={"options"}
-                        value={formValues["options"]}
-                        onChange={onChangeHandler}
-                    />}
-                    {data.type === "acceptance" ? (
+                    {data.type !== "acceptance" &&
+                        Object.keys(formValues).map(renderField)}
+
+                    {["select", "radio", "checkbox"].includes(data.type) && (
+                        <InputField
+                            key={data.type}
+                            type="textarea"
+                            label="Options (key=value as per new line)"
+                            name="options"
+                            value={formValues.options}
+                            onChange={onChangeHandler}
+                        />
+                    )}
+
+                    {data.type === "acceptance" && (
                         <>
                             {["required", "columnWidth"].map(renderField)}
+
                             <InputField
                                 key={data.type}
                                 type="textarea"
-                                label={"Context (html)"}
-                                name={"acceptance"}
-                                value={formValues["content"]}
+                                label="Context (html)"
+                                name="acceptance"
+                                value={formValues.content}
                                 onChange={onChangeHandler}
                             />
                         </>
-                    ) : null}
+                    )}
+
                     <button
-                        type="button"
-                        onClick={() => handleFieldUpdateSubmit(data.id, formValues)}
-                        className="mt-4 cursor-pointer bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600"
+                        type="submit"
+                        className="w-full sm:w-auto mt-4 cursor-pointer bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600"
                     >
                         Save Changes
                     </button>
                 </div>
-                <div className="absolute top-8 right-8">
-                    <button
-                        type="button"
-                        onClick={() => handleClose(data.id)}
-                        className="text-gray-700 font-semibold cursor-pointer text-sm"
-                    >
-                        Close
-                    </button>
-                </div>
-            </div>
+
+                <button
+                    type="button"
+                    onClick={handleClose}
+                    className="absolute top-4 right-4 text-gray-700 font-semibold text-sm cursor-pointer"
+                >
+                    Close
+                </button>
+            </form>
         </div>
     );
 }
@@ -149,7 +217,7 @@ function ToggleButton(props) {
             target: {
                 value: !isActive,
                 name: name,
-                type: "checkbox"
+                type: "checkbox",
             },
         });
         setIsActive(!isActive);
