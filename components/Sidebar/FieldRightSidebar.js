@@ -16,7 +16,12 @@ export default function FieldRightSidebar({ data, onSubmitFieldUpdate, onClose }
 
     useEffect(() => {
         blockUiFocus();
-        containerRef.current.querySelector("input").focus();
+        function handleFadeInAnimationEnd(e) {
+            if(e.animationName === "fadeIn") {
+                containerRef.current.querySelector("input").focus();
+            }
+        }
+        containerRef.current.addEventListener("animationend", handleFadeInAnimationEnd, {once: true});
         document.addEventListener("keyup", handleEscapeUp);
 
         return () => {
